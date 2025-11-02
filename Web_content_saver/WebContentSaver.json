@@ -1,0 +1,254 @@
+{
+  "name": "WebContentSaver",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Doc_ID_or_URL', ``, 'string') }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('actionFields0_Text', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        352,
+        160
+      ],
+      "id": "102e07e9-a29f-4b20-abcf-36c1b36c6845",
+      "name": "Update",
+        "credentials": {
+          "googleDocsOAuth2Api": {
+            "id": "PLACEHOLDER_CREDENTIAL_ID",
+            "name": "Google Docs account 2"
+          }
+        }
+    },
+    {
+      "parameters": {
+        "folderId": "PLACEHOLDER_FOLDER_ID",
+        "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        480,
+        160
+      ],
+      "id": "dbb780dd-b7f7-4099-af8f-823e17b20d1d",
+      "name": "Create",
+        "credentials": {
+          "googleDocsOAuth2Api": {
+            "id": "PLACEHOLDER_CREDENTIAL_ID",
+            "name": "Google Docs account 2"
+          }
+        }
+    },
+    {
+      "parameters": {
+        "formTitle": "Web Content Saver",
+        "formDescription": "Just paste the link to the website you want to save, and we’ll add its content to your Google Docs.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Enter website link",
+              "placeholder": "https://drive.google.com/drive/...",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "ignoreBots": true
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -256,
+        -64
+      ],
+      "id": "31883281-6062-4760-8693-d01138f14020",
+      "name": "On form submission",
+      "webhookId": "PLACEHOLDER_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Read the content of the provided website using your tools. \nMake a clear summary with details of it and save it to the docs using connected tools.\nWebsite:  {{ $json['Enter website link'] }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "Role:\nYou are a helpful and professional assistant, specialized in writing articles and creating concise, well-structured summaries.\n\nYour tasks:\n- Read the provided website carefully and completely.\n- Identify and extract the most relevant and important information.\n- Depending on the task, either:\n- Copy the content (if exact reproduction is required), or\n- Summarize it clearly while preserving key details, facts, and structure.\n- Create a new tab (sheet or document section) in Google Docs.\n- Give the tab a clear, descriptive title that reflects the content or main topic of the website.\n- Paste the copied or summarized content into the new tab.\n- Style & Formatting Guidelines:\n- Use a clean and structured layout (headings, bullet points, short paragraphs).\n- Write in a clear, professional, and user-friendly tone.\n- Ensure no important details are omitted.\n- If the website contains multiple topics, organize them logically with subheadings.\n- Save the provided Link at the end of the content in the google docs.\n\nExample:\nIf the website is about “AI Trends in 2025,” the tab name could be: AI_Trends_2025_Summary\n- Do not use Markdown symbols (like *, **, #, _, etc.)\n- Use plain text with clear headings and lists.\n- Example:\n  Heading: Function Chaining\n  Description: This allows you to call multiple methods in a single statement."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        216,
+        -64
+      ],
+      "id": "d2b76b80-1443-475c-bc60-ba059c392fe8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        160
+      ],
+      "id": "8f5c9e16-3e9f-4db6-afae-f4183190b5f1",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 1
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        160
+      ],
+      "id": "40b5f795-b0b6-42bc-b98c-db28c23989f8",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        96,
+        160
+      ],
+      "id": "0ee112c7-dbed-4125-bc93-237cde56a198",
+      "name": "Chat Model2",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        160
+      ],
+      "id": "a59e8648-e8b5-4a4d-b212-8262547509b6",
+      "name": "Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Update": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "PLACEHOLDER_VERSION_ID",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "PLACEHOLDER_INSTANCE_ID"
+  },
+  "id": "PLACEHOLDER_WORKFLOW_ID",
+  "tags": []
+}
