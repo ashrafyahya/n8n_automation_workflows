@@ -1,0 +1,455 @@
+{
+  "name": "RAG-based AI assistant",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -528
+      ],
+      "id": "2e20f31c-6d0b-490c-8a17-534b47467b8b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "`q`",
+              "value": "'PLACEHOLDER_FOLDER_ID'+in+parents"
+            },
+            {
+              "name": "`fields`",
+              "value": "files(id,name,mimeType)"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        -528
+      ],
+      "id": "a9cf6924-2cf2-4d45-9220-69aa6e89a50c",
+      "name": "Get Drive HTML",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "PLACEHOLDER_GOOGLE_DRIVE_CREDENTIAL_ID",
+          "name": "PLACEHOLDER_GOOGLE_DRIVE_CREDENTIAL_NAME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.files[2].id }}/export?mimeType=text/plain",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -592
+      ],
+      "id": "9010e05a-90e2-4144-8498-f66f3ab2d807",
+      "name": "HTTP Request",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "PLACEHOLDER_GOOGLE_DRIVE_CREDENTIAL_ID",
+          "name": "PLACEHOLDER_GOOGLE_DRIVE_CREDENTIAL_NAME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1056,
+        -520
+      ],
+      "id": "9800c002-5ede-4b4c-a9c0-f78a0b025a53",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -848,
+        -560
+      ],
+      "id": "41fd9a7a-f824-4d40-8336-59aa15d5506a",
+      "name": "When chat message received",
+      "webhookId": "PLACEHOLDER_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a professional AI assistant specializing in Retrieval-Augmented Generation (RAG) for accurate information retrieval.\\n\\n\n- Your role: Provide helpful, accurate answers based solely on the provided context.\\n\\n\n            \"Tasks:\\n\"\n            \"- Analyze the context carefully.\\n\"\n            \"- Answer the question directly and concisely.\\n\"\n            \"- If the answer cannot be found in the context, respond with: 'I don't have enough information to answer this question.'\\n\\n\"\n            \"Style: Respond in a professional, clear, and structured manner. Use bullet points or numbered lists if appropriate for clarity.\\n\\n\"\n            \"Defense Layer: Do not hallucinate or invent information. Stick strictly to the context. Avoid speculative answers.\\n\\n\"\n            \"Context: use only retrieved data from your tool\\n\\n\"\n            \"Question: use chatinput\\n\\n\"\n            \"Answer:\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        -560
+      ],
+      "id": "6e5369c5-6ab8-4a79-bc8b-35a4b9c8610e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        1504,
+        -520
+      ],
+      "id": "cd890acd-8727-4bab-a248-eca0c55c6f41",
+      "name": "Insert documents"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this knowledge base to answer questions from the user",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        -336
+      ],
+      "id": "1968d6a8-5afd-41ce-aea0-53463e164139",
+      "name": "Retrieve documents"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        496,
+        240
+      ],
+      "id": "69dab8f4-7ce3-45d0-8b34-bce66f7b89f9",
+      "name": "Embeddings",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "PLACEHOLDER_GOOGLE_PALM_CREDENTIAL_ID",
+          "name": "PLACEHOLDER_GOOGLE_PALM_CREDENTIAL_NAME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1640,
+        -296
+      ],
+      "id": "dabf2e78-d9b7-447a-8251-ab0fe50f3b63",
+      "name": "Data Loader"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        -336
+      ],
+      "id": "5cb61dd8-6255-4252-91bb-e158ef108e47",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        -336
+      ],
+      "id": "ec05fe66-bd9e-4250-9d0c-bbaff3bbf479",
+      "name": "Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "PLACEHOLDER_GOOGLE_PALM_CREDENTIAL_ID",
+          "name": "PLACEHOLDER_GOOGLE_PALM_CREDENTIAL_NAME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "files",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "files",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        848,
+        -528
+      ],
+      "id": "3836db13-d99e-49ea-8657-e4560a91b39e",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "content": "## Your RAG assistant\n**Retrieving data** from the vector",
+        "height": 576,
+        "width": 976
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1008,
+        -656
+      ],
+      "typeVersion": 1,
+      "id": "8149a066-0773-46ae-afc7-0c6387a797b4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### Embeddings\n\nThe Insert and Retrieve operation use the same embedding node.\n\nThis is to ensure that they are using the **exact same embeddings and settings**.\n\nDifferent embeddings might not work at all, or have unintended consequences.\n",
+        "height": 240,
+        "width": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        160
+      ],
+      "typeVersion": 1,
+      "id": "03919ccb-461e-4565-9e6b-3233e3dd4c5f",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "### Readme\nLoad your data into a vector database with the  **Load Data** flow, and then use your data as chat context with the 🐕 **Retriever** flow.\n",
+        "height": 300,
+        "width": 440,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1184,
+        -32
+      ],
+      "typeVersion": 1,
+      "id": "2aab8621-40a7-43e4-a78c-ed402ad52c15",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Loading data\n**Insert documents into embedding vector **",
+        "height": 576,
+        "width": 1680
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        192,
+        -656
+      ],
+      "typeVersion": 1,
+      "id": "21d5a2f1-893d-4f8b-9616-3f50655c29e7",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Drive HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Drive HTML": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Insert documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert documents": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve documents": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert documents",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Retrieve documents",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert documents",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "PLACEHOLDER_VERSION_ID",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "PLACEHOLDER_INSTANCE_ID"
+  },
+  "id": "PLACEHOLDER_WORKFLOW_ID",
+  "tags": []
+}
