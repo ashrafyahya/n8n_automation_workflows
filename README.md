@@ -80,6 +80,27 @@ Key features:
 ![Personal Data Extractor Workflow](/Extract_personal_data/Workflow.jpg)
 
 
+### 5. [Web Content Saver](./Web_content_saver/README.md)
+An automated web content saving and summarization system featuring:
+
+- Form-triggered content submission
+- AI-powered summarization using Gemini and DeepSeek
+- Automated saving to Google Docs
+
+#### Web Content Saver Workflow
+![Web Content Saver Workflow](./Web_content_saver/Web%20Content%20Saver%20n8n%20workflow.jpg)
+
+### 6. [RAG Based AI Assistant](./RAG_based_ai_assistant/README.md)
+An intelligent Retrieval-Augmented Generation (RAG) AI assistant featuring:
+
+- Chat-based interface for user queries
+- Data retrieval from Google Drive knowledge base
+- AI-powered responses based on retrieved context
+
+#### RAG Based AI Assistant Workflow
+![RAG Based AI Assistant Workflow](./RAG_based_ai_assistant/rag_based_ai_assistant.jpg)
+
+
 ## Getting Started
 
 To use these workflows:
